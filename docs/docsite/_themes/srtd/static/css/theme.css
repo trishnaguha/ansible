@@ -119,14 +119,18 @@ sub {
 }
 
 ul, ol, dl {
+/*
     margin: 0;
     padding: 0;
     list-style: none;
     list-style-image: none;
+*/
 }
 
 li {
+/*
     list-style: none;
+*/
 }
 
 dd {

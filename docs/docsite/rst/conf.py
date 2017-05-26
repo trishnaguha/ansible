@@ -25,7 +25,7 @@ import os
 # absolute, like shown here.
 # sys.path.append(os.path.abspath('some/directory'))
 #
-sys.path.insert(0, os.path.join('ansible', 'lib'))
+sys.path.insert(0, os.path.abspath(os.path.join('..', '..', '..', 'lib', 'ansible')))
 sys.path.append(os.path.abspath('_themes'))
 
 VERSION = '2.4'
@@ -228,3 +228,8 @@ autoclass_content = 'both'
 intersphinx_mapping = {'python': ('https://docs.python.org/2/', (None, '../python2-2.7.13.inv')),
                        'python3': ('https://docs.python.org/3/', (None, '../python3-3.6.2.inv')),
                        'jinja2': ('http://jinja.pocoo.org/docs/', (None, '../jinja2-2.9.7.inv'))}
+
+from helpers.ansible_include import AnsibleIncludeDirective
+
+def setup(app):
+    app.add_directive('ansible_include', AnsibleIncludeDirective)
