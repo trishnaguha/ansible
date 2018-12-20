@@ -24,9 +24,12 @@ class ActionModule(ActionBase):
             mod_args = self._task.args.copy()
 
         if fact_module != 'setup':
-            subset = mod_args.pop('gather_subset', None)
-            if subset not in ('all', ['all']):
-                self._display.warning('Ignoring subset(%s) for %s' % (subset, fact_module))
+            if self._play_context.connection in ('network_cli', 'httpapi', 'netconf'):
+                mod_args.pop('gather_timeout')
+            else:
+                subset = mod_args.pop('gather_subset', None)
+                if subset not in ('all', ['all']):
+                    self._display.warning('Ignoring subset(%s) for %s' % (subset, fact_module))
 
         return mod_args
 
