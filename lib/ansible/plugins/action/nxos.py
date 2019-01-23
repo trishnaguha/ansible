@@ -42,6 +42,9 @@ class ActionModule(ActionNetworkModule):
         self._config_module = True if self._task.action == 'nxos_config' else False
         socket_path = None
 
+        connection = self._connection
+        display.warning('command_timeout is {0} and connect_timeout is {1}'.format(connection.get_option('persistent_command_timeout'), connection.get_option('persistent_connect_timeout')))
+
         if (self._play_context.connection == 'httpapi' or self._task.args.get('provider', {}).get('transport') == 'nxapi') \
                 and self._task.action in ('nxos_file_copy', 'nxos_nxapi'):
             return {'failed': True, 'msg': "Transport type 'nxapi' is not valid for '%s' module." % (self._task.action)}
