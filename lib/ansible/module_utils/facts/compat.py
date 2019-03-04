@@ -29,9 +29,14 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
+from ansible.module_utils.connection import Connection
+
 from ansible.module_utils.facts.namespace import PrefixFactNamespace
 from ansible.module_utils.facts import default_collectors
+from ansible.module_utils.facts import network_collectors
 from ansible.module_utils.facts import ansible_collector
+
+from ansible.module_utils._text import to_text
 
 
 def get_all_facts(module):
@@ -64,12 +69,27 @@ def ansible_facts(module, gather_subset=None):
     gather_timeout = module.params.get('gather_timeout', 10)
     filter_spec = module.params.get('filter', '*')
 
-    minimal_gather_subset = frozenset(['apparmor', 'caps', 'cmdline', 'date_time',
-                                       'distribution', 'dns', 'env', 'fips', 'local',
-                                       'lsb', 'pkg_mgr', 'platform', 'python', 'selinux',
-                                       'service_mgr', 'ssh_pub_keys', 'user'])
+    if module._socket_path:
+        minimal_gather_subset = frozenset()
+        all_collector_classes = []
+        connection = Connection(module._socket_path)
 
-    all_collector_classes = default_collectors.collectors
+        if hasattr(connection, 'get_capabilities'):
+            capabilities = module.from_json(connection.get_capabilities())
+
+            # Return facts when connection plugin is network_cli
+            if capabilities and to_text(capabilities['network_api']) == 'cliconf':
+                minimal_gather_subset = frozenset(['platform'])
+                all_collector_classes = network_collectors.collectors
+
+    else:
+        minimal_gather_subset = frozenset(['apparmor', 'caps', 'cmdline', 'date_time',
+                                           'distribution', 'dns', 'env', 'fips', 'local',
+                                           'lsb', 'pkg_mgr', 'platform', 'python', 'selinux',
+                                           'service_mgr', 'ssh_pub_keys', 'user'])
+
+        all_collector_classes = default_collectors.collectors
+        connection = None
 
     # don't add a prefix
     namespace = PrefixFactNamespace(namespace_name='ansible', prefix='')
@@ -80,7 +100,8 @@ def ansible_facts(module, gather_subset=None):
                                                 filter_spec=filter_spec,
                                                 gather_subset=gather_subset,
                                                 gather_timeout=gather_timeout,
-                                                minimal_gather_subset=minimal_gather_subset)
+                                                minimal_gather_subset=minimal_gather_subset,
+                                                connection=connection)
 
     facts_dict = fact_collector.collect(module=module)
 
