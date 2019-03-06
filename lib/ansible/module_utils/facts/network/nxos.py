@@ -24,7 +24,7 @@ import struct
 
 from ansible.module_utils.facts.network.base import Network, NetworkCollector
 from ansible.module_utils.facts.utils import get_file_content
-from ansible.module_utils.network.nxos.facts.interfaces import NxosInterfaces
+from ansible.module_utils.network.nxos.facts.interfaces.interfaces import NxosInterfaces
 from ansible.module_utils.six import iteritems
 
 
@@ -43,8 +43,7 @@ class NxosNetwork(Network):
 
         network_facts['network_interfaces'] = {}
         data = self.get('show running-config | section ^interface')
-        candidate = NxosInterfaces()
-        network_facts['network_interfaces'] = candidate.populate_facts(data)
+        network_facts['network_interfaces'] = NxosInterfaces(data).populate_facts()
 
         network_facts['all_ipv4_address'] = []
         data = self.get('show interface')

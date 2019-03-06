@@ -1,8 +1,12 @@
 import re
 
+from copy import deepcopy
+
 from ansible.module_utils.facts import ansible_facts
 from ansible.module_utils.network.common.utils import to_list
+from ansible.module_utils.network.nxos.nxos import get_config
 from ansible.module_utils.network.nxos.config.base import ConfigBase
+from ansible.module_utils.network.nxos.facts.interfaces.interfaces import NxosInterfaces
 from ansible.module_utils.six import iteritems
 
 
@@ -28,11 +32,9 @@ class Interface(ConfigBase):
 
     def set_config(self, module):
         want = self._config_map_params_to_obj(module)
-        interfaces_facts = ansible_facts(module, ['interfaces'])
-        interfaces = interfaces_facts['network_interfaces']
-        have = []
-        if interfaces:
-            have = interfaces['config']
+        data = get_config(module, ['| section ^interface'])
+        facts = NxosInterfaces(data, self.argument_spec, 'config', 'options').populate_facts()
+        have = facts['config']
         resp = self.set_operation(want, have)
         return to_list(resp)
 
