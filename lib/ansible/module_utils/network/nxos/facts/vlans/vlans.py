@@ -57,8 +57,9 @@ class VlansFacts(object):
         for conf in config:
             conf = conf.strip()
             if conf:
-                if conf[0] in vlans:
-                    vlans.remove(conf[0])
+                v = conf.split('\n')[0]
+                if v in vlans:
+                    vlans.remove(v)
                     obj = self.render_config(self.generated_spec, conf)
                     if obj and len(obj.keys()) > 1:
                         objs.append(obj)
@@ -94,7 +95,7 @@ class VlansFacts(object):
 
         match = re.search(r'^(\S+)?', conf, re.M)
         if match:
-            if len(match.group(1)) == 1:
+            if len(match.group(1)) > 0:
                 config['vlan_id'] = match.group(1)
                 config['name'] = parse_conf_arg(conf, 'name')
                 config['mode'] = parse_conf_arg(conf, 'mode')
